@@ -1,0 +1,2 @@
+# tax-haven
+prosperity

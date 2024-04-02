@@ -115,3 +115,4 @@ class Trader:
 
         logger.flush(state, result, conversions, trader_data)
         return result, conversions, trader_data
+      

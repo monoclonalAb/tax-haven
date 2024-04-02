@@ -87,16 +87,94 @@ class Logger:
 logger = Logger()
 
 class Trader:
+    
+    list_of_starfruit_averages = []
+
+    def trade_amethysts (self, order_depth: OrderDepth, acceptable_price: int) -> list[Order]:
+        """
+        AMETHYSTS:
+        - min_price: 9,995
+        - max_price: 10,005
+        
+        first plan: (very basic plan, just to get started)
+        - when bid price > 10,000, sell
+        - when ask price < 10,000, buy
+        """
+        
+        orders: List[Order] = []
+        
+        for price, amount in order_depth.sell_orders.items():
+            if price < acceptable_price:
+                orders.append(Order("AMETHYSTS", price, -amount))
+        
+        for price, amount in order_depth.buy_orders.items():
+            if price > acceptable_price:
+                orders.append(Order("AMETHYSTS", price, -amount))
+        return orders
+      
+    def trade_starfruit (self, order_depth: OrderDepth, moving_average: int) -> list[Order]:
+      """
+      STARFRUIT:
+      - variable min_price and max_price
+      
+      first plan:
+      - calculate a moving average
+      - when bid price > moving average, sell
+      - when ask price < moving average, buy
+      """
+      
+      orders: List[Order] = []
+      
+      for price, amount in order_depth.sell_orders.items():
+          if price <= moving_average:
+              orders.append(Order("STARFRUIT", price, -amount))
+      
+      for price, amount in order_depth.buy_orders.items():
+          if price >= moving_average:
+              orders.append(Order("STARFRUIT", price, -amount))
+      return orders
+      
+  
+  
     def run(self, state: TradingState) -> tuple[dict[Symbol, list[Order]], int, str]:
+        """
+        Only method required. It takes all buy and sell orders for all symbols as an input,
+        and outputs a list of orders to be sent
+        """
         result = {}
         conversions = 0
         trader_data = ""
-
-        # logic goes here:
         
-        # todo:
-        # - market make for AMETHYSTS
-        # - mean reversion for STARFRUIT
+        # products = "AMETHYSTS"
+        amethyst_order = self.trade_amethysts(state.order_depths["AMETHYSTS"], 10000)
+        result["AMETHYSTS"] = amethyst_order
+        
+        #product = "STARFRUIT"
+        
+        # average_starfruit_bid_price = sum(state.order_depths["STARFRUIT"].buy_orders.keys()) / len(state.order_depths["STARFRUIT"].buy_orders)
+        # average_starfruit_ask_price = sum(state.order_depths["STARFRUIT"].sell_orders.keys()) / len(state.order_depths["STARFRUIT"].sell_orders)
+        # average_starfruit_price = (average_starfruit_bid_price + average_starfruit_ask_price) / 2
+        # logger.print("average sf bid price: " + str(average_starfruit_bid_price))
+        # logger.print("average sf ask price: " + str(average_starfruit_ask_price))
+        # logger.print("average overall sf price: " + str(average_starfruit_price))
+        
+        best_starfruit_bid_price = list(state.order_depths["STARFRUIT"].buy_orders.keys())[0]
+        best_starfruit_ask_price = list(state.order_depths["STARFRUIT"].sell_orders.keys())[0]
+        average_starfruit_price = (best_starfruit_bid_price + best_starfruit_ask_price) / 2
+        logger.print("best sf bid price: " + str(best_starfruit_bid_price))
+        logger.print("best sf ask price: " + str(best_starfruit_ask_price))
+        logger.print("average overall sf price: " + str(average_starfruit_price))
+        
+        self.list_of_starfruit_averages.append(average_starfruit_price)
+
+        if (len(self.list_of_starfruit_averages) > 10): self.list_of_starfruit_averages.pop(0)
+        
+        moving_average = sum(self.list_of_starfruit_averages) / len(self.list_of_starfruit_averages)
+        logger.print("moving average: " + str(moving_average))
+        logger.print(moving_average)
+        starfruit_order = self.trade_starfruit(state.order_depths["STARFRUIT"], moving_average)
+        
+        result["STARFRUIT"] = starfruit_order
 
         logger.flush(state, result, conversions, trader_data)
         return result, conversions, trader_data

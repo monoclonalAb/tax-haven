@@ -1,0 +1,6 @@
+prosperity2bt
+pandas
+numpy
+statistics
+typing
+jsonpickle

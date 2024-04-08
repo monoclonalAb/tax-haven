@@ -1,6 +1,7 @@
 import json
 from datamodel import Listing, Observation, Order, OrderDepth, ProsperityEncoder, Symbol, Trade, TradingState
 from typing import Any, List
+import collections
 
 class Logger:
     def __init__(self) -> None:
@@ -90,7 +91,7 @@ class Trader:
     
     list_of_starfruit_averages = []
 
-    def trade_amethysts (self, order_depth: OrderDepth, acceptable_price: int) -> list[Order]:
+    def trade_amethysts (self, product : str, order_depth: OrderDepth, position : int, acceptable_bid: int, acceptable_ask: int) -> list[Order]:
         """
         AMETHYSTS:
         - min_price: 9,995
@@ -103,13 +104,16 @@ class Trader:
         
         orders: List[Order] = []
         
+        ordered_dict_sell = collections.OrderedDict(sorted(order_depth.sell_orders.items()))
+        ordered_dict_buy = collections.OrderedDict(sorted(order_depth.buy_orders.items(), reverse=True))
+
         for price, amount in order_depth.sell_orders.items():
-            if price < acceptable_price:
-                orders.append(Order("AMETHYSTS", price, -amount))
+            if price < acceptable_bid:
+                orders.append(Order(product, price, -amount))
         
         for price, amount in order_depth.buy_orders.items():
-            if price > acceptable_price:
-                orders.append(Order("AMETHYSTS", price, -amount))
+            if price > acceptable_ask:
+                orders.append(Order(product, price, -amount))
         return orders
       
     def trade_starfruit (self, order_depth: OrderDepth, moving_average: int) -> list[Order]:
@@ -146,7 +150,7 @@ class Trader:
         trader_data = ""
         
         # products = "AMETHYSTS"
-        amethyst_order = self.trade_amethysts(state.order_depths["AMETHYSTS"], 10000)
+        amethyst_order = self.trade_amethysts("AMETHYSTS", state.order_depths["AMETHYSTS"], state.position.get("AMETHYSTS", 0), 10000, 10000)
         result["AMETHYSTS"] = amethyst_order
         
         #product = "STARFRUIT"
@@ -158,23 +162,23 @@ class Trader:
         # logger.print("average sf ask price: " + str(average_starfruit_ask_price))
         # logger.print("average overall sf price: " + str(average_starfruit_price))
         
-        best_starfruit_bid_price = list(state.order_depths["STARFRUIT"].buy_orders.keys())[0]
-        best_starfruit_ask_price = list(state.order_depths["STARFRUIT"].sell_orders.keys())[0]
-        average_starfruit_price = (best_starfruit_bid_price + best_starfruit_ask_price) / 2
-        logger.print("best sf bid price: " + str(best_starfruit_bid_price))
-        logger.print("best sf ask price: " + str(best_starfruit_ask_price))
-        logger.print("average overall sf price: " + str(average_starfruit_price))
+        # best_starfruit_bid_price = list(state.order_depths["STARFRUIT"].buy_orders.keys())[0]
+        # best_starfruit_ask_price = list(state.order_depths["STARFRUIT"].sell_orders.keys())[0]
+        # average_starfruit_price = (best_starfruit_bid_price + best_starfruit_ask_price) / 2
+        # logger.print("best sf bid price: " + str(best_starfruit_bid_price))
+        # logger.print("best sf ask price: " + str(best_starfruit_ask_price))
+        # logger.print("average overall sf price: " + str(average_starfruit_price))
         
-        self.list_of_starfruit_averages.append(average_starfruit_price)
+        # self.list_of_starfruit_averages.append(average_starfruit_price)
 
-        if (len(self.list_of_starfruit_averages) > 10): self.list_of_starfruit_averages.pop(0)
+        # if (len(self.list_of_starfruit_averages) > 10): self.list_of_starfruit_averages.pop(0)
         
-        moving_average = sum(self.list_of_starfruit_averages) / len(self.list_of_starfruit_averages)
-        logger.print("moving average: " + str(moving_average))
-        logger.print(moving_average)
-        starfruit_order = self.trade_starfruit(state.order_depths["STARFRUIT"], moving_average)
+        # moving_average = sum(self.list_of_starfruit_averages) / len(self.list_of_starfruit_averages)
+        # logger.print("moving average: " + str(moving_average))
+        # logger.print(moving_average)
+        # starfruit_order = self.trade_starfruit(state.order_depths["STARFRUIT"], moving_average)
         
-        result["STARFRUIT"] = starfruit_order
+        # result["STARFRUIT"] = starfruit_order
 
         logger.flush(state, result, conversions, trader_data)
         return result, conversions, trader_data

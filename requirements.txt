@@ -1,5 +1,8 @@
 prosperity2bt
 pandas
+matplotlib
+ipywidgets
+ipympl
 numpy
 statistics
 typing

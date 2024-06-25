@@ -1,3 +1,4 @@
 # tax-haven
 IMC Prosperity 2
-- 34th globally
+- top NZ and AUS team
+- 34th globally out of 9000+ teams
